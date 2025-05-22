@@ -135,7 +135,9 @@ function modjusStop(html) {
     for (const textarea of textareas) {
         const text = textarea.value;
         if (text && text.includes("modjus-url=\"")) {
+            console.log('textarea', textarea);
             textarea.innerText = html
+            console.log('textarea', textarea);
             window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*')
                 // window.CKEDITOR.instances[textarea.id].setData(html);
             break

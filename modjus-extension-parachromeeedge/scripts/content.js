@@ -91,7 +91,7 @@ function modjusStart(url, data) {
     .then(result => {
         console.log('Success:', result);
 
-        const form = document.querySelector("form");
+        let form = document.querySelector("div.infra-editor__editor-completo");
         const hundredpercent = "border:0;margin:0;padding:0;height:100%;width:100%;overflow:hidden";
         const iframe = document.createElement("iframe");
 
@@ -130,42 +130,29 @@ function modjusStart(url, data) {
 function modjusStop(html) {
     const iframe = document.querySelector("iframe");
     iframe.style.display = "none";
-    const form = document.querySelector("form");
-    // form.style.display = _original_form_style_display;
-    for (const textarea of textareas) {
-        const text = textarea.value;
-        if (text && text.includes("modjus-url=\"")) {
-            textarea.innerText = html
-            window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*')
-                // window.CKEDITOR.instances[textarea.id].setData(html);
-            break
-        }
-    }
+    //console.log('html', html);
+
+    divElement.setAttribute("modjus-data", html);
+    window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: divElement.id, html: html } }, '*');
+
 }
 
 window.addEventListener('message', (event) => {
     if (event.data.type === 'SAVE_DATA') {
-        console.log('Dados recebidos no parent frame:', event.data.payload);
         modjusStop(event.data.payload);
     }
 });
 
-const textareas = document.querySelectorAll("textarea");
+const divElement = document.querySelector("div[modjus-data][modjus-url]");
 
-for (const textarea of textareas) {
-    const text = textarea.value;
-    if (text && text.includes("modjus-url=\"")) {
-        const url = text.match(/modjus-url="([^"]+)"/)[1];
-        const jsonenc = text.match(/modjus-data="([^"]+)"/)[1];
-        const json = unescapeHtml(jsonenc);
-        const data = json ? JSON.parse(json) : undefined
-        console.log('url', url);
-        console.log('data', data);
-        // modjusStart(`${url}?data=${encodeURIComponent(json)}&url=${encodeURIComponent(url)}`, data);
-        modjusStart(url, data);
-    }
+const modjusData = divElement.getAttribute("modjus-data");
+const modjusUrl = divElement.getAttribute("modjus-url");
+
+if (modjusData && modjusUrl) {
+    const json = unescapeHtml(modjusData);
+    const data = json ? JSON.parse(json) : undefined;
+    modjusStart(modjusUrl, data);
 }
-
 
 function injectScript(file, node) {
     var th = document.getElementsByTagName(node)[0];
