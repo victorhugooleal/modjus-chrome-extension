@@ -154,11 +154,17 @@ if (modjusData && modjusUrl) {
     modjusStart(modjusUrl, data);
 }
 
-function injectScript(file, node) {
+function injectScript(file, node, callback) {
     var th = document.getElementsByTagName(node)[0];
     var s = document.createElement('script');
     s.setAttribute('type', 'text/javascript');
     s.setAttribute('src', file);
+    s.onload = callback;
     th.appendChild(s);
 }
+
 injectScript(chrome.runtime.getURL('/js/listen.js'), 'body');
+injectScript(chrome.runtime.getURL('/js/ckeditor.js'), 'body', function() {
+    console.log('CKEditor script loaded and ready.');
+    console.log('Checking window.ClassicEditor after load:', window.ClassicEditor);
+});

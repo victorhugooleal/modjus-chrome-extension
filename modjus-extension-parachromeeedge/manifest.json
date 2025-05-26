@@ -37,13 +37,14 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["js/listen.js"],
+      "resources": ["js/ckeditor.js"],
       "matches": ["<all_urls>"]
     },
     {
-      "resources": ["https://cdn.ckeditor.com/ckeditor5/35.0.1/classic/ckeditor.js"],
+      "resources": ["js/listen.js"],
       "matches": ["<all_urls>"]
     }
+    
   ],
   "host_permissions": [
     "http://localhost/*",
