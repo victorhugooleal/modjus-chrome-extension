@@ -37,10 +37,6 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["js/ckeditor.js"],
-      "matches": ["<all_urls>"]
-    },
-    {
       "resources": ["js/listen.js"],
       "matches": ["<all_urls>"]
     }

@@ -2,79 +2,69 @@
 // Escuta mensagens do app externo
 // ====================
 window.addEventListener('message', (event) => {
-  if (event.data.type !== 'UPDATE_EDITORS') return;
+    if (event.data.type !== 'UPDATE_EDITORS') return;
 
-  const { id, html } = event.data.payload;
+    const { id, html } = event.data.payload;
 
-  // ====================
-  // CKEditor 5 via inicializadorDll (SEI 5)
-  // ====================
-  const editor = window.inicializadorDll?.editores?.[0];
+    // ====================
+    // CKEditor 4 via inicializadorDll (SEI 4)
+    // ====================
+    console.log('CKEDITOR listener:', event.data.payload);
+    console.log('CKEDITOR listener id:', id);
+    console.log('CKEDITOR listener html:', html);   
+    if (window.CKEDITOR && CKEDITOR.instances[id]) {
+        CKEDITOR.instances[id].setData(html);
+        console.log('CKEditor 4 encontrado e atualizado.');
+        return;
+    } else if (window.inicializadorDll && window.inicializadorDll.editores) {
+        console.warn('⚠️ CKEditor 4 não encontrado, tentando CKEditor 5.');
 
-  if (!editor) {
-    console.warn('⚠️ Nenhuma instância CKEditor 5 encontrada.');
-    return;
-  }
+        // ====================
+        // CKEditor 5 via inicializadorDll (SEI 5)
+        // ====================
+        const editor = window.inicializadorDll?.editores?.[0];
 
-  const root = editor.model.document.getRoot("txaEditor_2811");
+        if (!editor) {
+            console.warn('⚠️ Nenhuma instância CKEditor 5 encontrada.');
+            return;
+        }
 
-  if (!root) {
-    console.warn("⚠️ Raiz  não encontrada no CKEditor 5.");
-    return;
-  }
+        const root = editor.model.document.getRoot(id);
 
-  const nodes = Array.from(root.getChildren());
+        if (!root) {
+            console.warn("⚠️ Raiz  não encontrada no CKEditor 5.");
+            return;
+        }
 
-  // Localiza o nó com nome "htmlDivParagraf"
- // const targetNode = nodes.find(node => node.name === 'htmlDivParagraf');
- const targetNode = nodes[1]
+        const nodes = Array.from(root.getChildren());
 
-  if (!targetNode) {
-    console.warn('⚠️ Nenhum node com name "htmlDivParagraf" encontrado.');
-    return;
-  }
+        // Localiza o nó com nome "htmlDivParagraf"
+        // const targetNode = nodes.find(node => node.name === 'htmlDivParagraf');
+        const targetNode = nodes[1]
 
-  try {
-    editor.model.change(writer => {
-      // Remove o conteúdo atual do node "htmlDivParagraf"
-      writer.remove(targetNode);
+        if (!targetNode) {
+            console.warn('⚠️ Nenhum node com name "htmlDivParagraf" encontrado.');
+            return;
+        }
 
-      // Converte HTML para ViewFragment
-      const viewFragment = editor.data.processor.toView(html);
+        try {
+            editor.model.change(writer => {
+            // Remove o conteúdo atual do node "htmlDivParagraf"
+            writer.remove(targetNode);
 
-      // Converte ViewFragment para ModelFragment
-      const modelFragment = editor.data.toModel(viewFragment);
+            // Converte HTML para ViewFragment
+            const viewFragment = editor.data.processor.toView(html);
 
-      // Insere o novo conteúdo na posição original
-      writer.insert(modelFragment, root, targetNode.startOffset);
-    });
+            // Converte ViewFragment para ModelFragment
+            const modelFragment = editor.data.toModel(viewFragment);
 
-    
-  } catch (e) {
-    console.error('⚠️ Erro ao atualizar o CKEditor 5:', e);
+            // Insere o novo conteúdo na posição original
+            writer.insert(modelFragment, root, targetNode.startOffset);
+            });
+
+            
+        } catch (e) {
+            console.error('⚠️ Erro ao atualizar o CKEditor 5:', e);
+        }
   }
 });
-
-
-// window.postMessage({
-//   type: 'UPDATE_EDITORS',
-//   payload: {
-//     id: 'txaEditor_2811',
-//     html: `<div id="modjus-document" modjus-data="{&quot;processo&quot;:&quot;0000074-44.2025.4.02.8000&quot;}" modjus-url="https://modjus-tst.trf2.jus.br/SolicitacaoDeslocamento">
-//       <div class="scrollableContainer">
-//         <h4>Dados do Proponente</h4>
-//         <p><strong>Proponente:</strong> JOÃO LUIS MOREIRA DE OLIVEIRA</p>
-//         <p><strong>Matrícula:</strong> T211817</p>
-//         <p><strong>Cargo:</strong> ANALISTA JUDICIÁRIO(A)/TI</p>
-
-//         <h4>Dados do Beneficiário</h4>
-//         <p><strong>Tipo:</strong> Servidor</p>
-//         <p><strong>Faixa:</strong> Nacional</p>
-
-//         <h4>Dados da Atividade</h4>
-//         <p><strong>Tipo de Diária:</strong> Integral</p>
-//         <p><strong>Justificativa:</strong> Participação em evento técnico.</p>
-//       </div>
-//     </div>`
-//   }
-// }, '*');
