@@ -1,7 +1,3 @@
-console.log('Content script loaded');
-// console.log('CKEDITOR', CKEDITOR);
-
-
 function unescapeHtmlB(escapedHtmlB) {
     const doc = new DOMParser().parseFromString(escapedHtmlB, 'text/html');
     return doc.documentElement.textContent || doc.body.textContent;
@@ -79,7 +75,6 @@ function modjusStart(url, data) {
     // Cria uma instância de URL para poder acessar facilmente o protocolo, host e porta (se houver)
     const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.hostname}${urlObj.port ? ':' + urlObj.port : ''}`;
-    console.log('fetch:', `${baseUrl}/api/data-store`, JSON.stringify(data));
     fetch(`${baseUrl}/api/data-store`, {
         method: 'POST',
         headers: {
@@ -89,7 +84,6 @@ function modjusStart(url, data) {
     })
     .then(response => response.json())
     .then(result => {
-        console.log('Success:', result);
 
         let form = document.querySelector("div.infra-editor__editor-completo");
         if (!form) {
@@ -138,13 +132,10 @@ function modjusStop(html) {
         divElement.setAttribute("modjus-data", html);
         window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: parentDivId, html: html } }, '*');
     }else{  // sei 4
-        console.log('textarea', textareas);
         for (const textarea of textareas) {
             const text = textarea.value;
             if (text && text.includes("modjus-url=\"")) {
-                console.log('textarea', textarea);
                 textarea.innerText = html
-                console.log('textarea', textarea);
                 window.postMessage({ type: 'UPDATE_EDITORS', payload: { id: textarea.name, html: html } }, '*');
                 break
             }
@@ -160,7 +151,7 @@ window.addEventListener('message', (event) => {
 });
 
 const divElement = document.querySelector("div[modjus-data][modjus-url]");
-const parentDiv = divElement ? divElement.closest('div[id]') : null;
+const parentDiv = divElement ? divElement.parentElement.closest('div[id]') : null;
 const parentDivId = parentDiv ? parentDiv.id : null;
 
 const textareas = document.querySelectorAll("textarea");
@@ -168,8 +159,6 @@ const textareas = document.querySelectorAll("textarea");
 if (divElement != null) { // sei 5
     const modjusData = divElement.getAttribute("modjus-data");
     const modjusUrl = divElement.getAttribute("modjus-url");
-    console.log('modjusData:', modjusData);
-    console.log('modjusUrl:', modjusUrl);
     if (modjusData && modjusUrl) {
         const json = unescapeHtml(modjusData);
         const data = json ? JSON.parse(json) : undefined;
@@ -183,8 +172,6 @@ if (divElement != null) { // sei 5
             const jsonenc = text.match(/modjus-data="([^"]+)"/)[1];
             const json = unescapeHtml(jsonenc);
             const data = json ? JSON.parse(json) : undefined
-            console.log('url', url);
-            console.log('data', data);
             modjusStart(url, data);
         }
     }
